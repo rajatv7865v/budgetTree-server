@@ -7,19 +7,19 @@ import {
   Query,
   Res,
 } from '@nestjs/common';
-import { TypeFormService } from './type-form.service';
+import { HubSpotService } from './hubspot.service';
 import { ApiBasicAuth } from '@nestjs/swagger';
 import { CustomHttpException } from 'src/core/exceptions';
 
 @ApiBasicAuth()
-@Controller('auth/typeform')
-export class TypeFormController {
-  constructor(private readonly typeFormService: TypeFormService) {}
+@Controller('auth/hubspot')
+export class HubSpotController {
+  constructor(private readonly hubSpotService: HubSpotService) {}
 
   @Get('connect')
   connect(@Res() res: any) {
     try {
-      return this.typeFormService.connect(res);
+      return this.hubSpotService.connect(res);
     } catch (error) {
       throw new CustomHttpException(error);
     }
@@ -30,12 +30,12 @@ export class TypeFormController {
   async callbackHandler(@Query('code') code: string, @Res() res: Response) {
     console.log('clicked callback', code);
     try {
-      const tokenResponse = await this.typeFormService.getAccessToken(code);
+      const tokenResponse = await this.hubSpotService.getAccessToken(code);
       const accessToken = tokenResponse.access_token;
       console.log('accessToken', accessToken);
 
       // // Fetch all forms
-      const forms = await this.typeFormService.getAllForms(accessToken);
+      const forms = await this.hubSpotService.getAllForms(accessToken);
 
       // // Respond with the forms or redirect to a frontend page
       // // res.json(forms); // You could also render a view or redirect

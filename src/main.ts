@@ -7,7 +7,11 @@ import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
-  app.enableCors();
+  app.enableCors({
+    origin: 'http://localhost:3000', // Your frontend origin (Change this to the correct origin if necessary)
+    methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
+    credentials: true,
+  });
   const configService = await app.get(ConfigService);
   console.log(configService.get('APP.APP_PORT'));
 

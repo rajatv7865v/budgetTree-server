@@ -3,13 +3,12 @@ import { Injectable, Res } from '@nestjs/common';
 import { firstValueFrom } from 'rxjs';
 
 @Injectable()
-export class TypeFormService {
+export class HubSpotService {
   constructor(private readonly httpService: HttpService) {}
 
   async connect(res: any) {
     try {
-      const url =
-        'https://api.typeform.com/oauth/authorize?client_id=H3BwQYmeavoYtQ7z8XBzFne7guwKh1EhdJbqmzwVvqD6&redirect_uri=http://localhost:8080/api/v1/auth/typeform/callback&scope=forms:read+responses:read+webhooks:write';
+      const url = `https://app.hubspot.com/oauth/authorize?client_id=6e27480e-9fa0-446a-a3cb-ea78208f5a24&scope=crm.objects.contacts.read&redirect_uri=https://app.budgetree.in/auth/hubspot/callback&response_type=code`;
 
       // Send the redirect URL to the frontend
       return res.json({ redirectUrl: url });

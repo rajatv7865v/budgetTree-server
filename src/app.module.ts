@@ -4,6 +4,7 @@ import { AppService } from './app.service';
 import { ConfigModule } from '@nestjs/config';
 import { TypeFormModule } from './modules/connectors/type-form/type-form.module';
 import configuration from './config/configuration';
+import { ModulesModule } from './modules/modules.module';
 
 @Module({
   imports: [
@@ -14,7 +15,7 @@ import configuration from './config/configuration';
       isGlobal: true,
       load: configuration,
     }),
-    TypeFormModule,
+    ModulesModule,
   ],
   controllers: [AppController],
   providers: [AppService],
