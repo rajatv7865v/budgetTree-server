@@ -27,7 +27,7 @@ export class HubSpotController {
 
   @HttpCode(HttpStatus.OK)
   @Get('callback')
-  async callbackHandler(@Query('code') code: string, @Res() res: Response) {
+  async callbackHandler(@Query('code') code: string, @Res() res: any) {
     console.log('clicked callback', code);
     try {
       const tokenResponse = await this.hubSpotService.getAccessToken(code);

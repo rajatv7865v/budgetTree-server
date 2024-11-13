@@ -17,9 +17,11 @@ export class TypeFormController {
   constructor(private readonly typeFormService: TypeFormService) {}
 
   @Get('connect')
+  // @HttpCode(HttpStatus.OK)
   connect(@Res() res: any) {
     try {
-      return this.typeFormService.connect(res);
+      const url = this.typeFormService.connect(res);
+      res.redirect(301, 'http://localhost:8080');
     } catch (error) {
       throw new CustomHttpException(error);
     }
@@ -27,8 +29,7 @@ export class TypeFormController {
 
   @HttpCode(HttpStatus.OK)
   @Get('callback')
-  async callbackHandler(@Query('code') code: string, @Res() res: Response) {
-    console.log('clicked callback', code);
+  async callbackHandler(@Query('code') code: string, @Res() res: any) {
     try {
       const tokenResponse = await this.typeFormService.getAccessToken(code);
       const accessToken = tokenResponse.access_token;
@@ -36,13 +37,27 @@ export class TypeFormController {
 
       // // Fetch all forms
       const forms = await this.typeFormService.getAllForms(accessToken);
+      console.log('forms', forms);
 
-      // // Respond with the forms or redirect to a frontend page
-      // // res.json(forms); // You could also render a view or redirect
-      return forms;
+      // Respond with the forms or redirect to a frontend page
+      // res.json(forms); // You could also render a view or redirect
+
+      // return forms;
+      res.redirect(301, 'http://localhost:3000/dashboard/type_form');
     } catch (error) {
       return;
       // res.status(500).json({ error: 'Failed to get access token or forms' });
     }
+  }
+
+  @HttpCode(HttpStatus.OK)
+  @Get('/get-all-forms')
+  async getAllForms() {
+    const { items } = await this.typeFormService.getAllForms(
+      'E1bzNRuVzr8tKNPg3Ppf23CGZiECwy2zPQwrz1cFazmv',
+    );
+    return {
+      items,
+    };
   }
 }

@@ -50,6 +50,7 @@ export class TypeFormService {
   }
 
   async getAllForms(accessToken: string) {
+    console.log('acctoken in getAllforms', accessToken);
     const url = 'https://api.typeform.com/forms';
     const headers = {
       Authorization: `Bearer ${accessToken}`,
