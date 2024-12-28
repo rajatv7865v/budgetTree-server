@@ -8,7 +8,7 @@ export class ZoomService {
 
   async connect(res: any) {
     try {
-      const url = `https://zoom.us/oauth/authorize?response_type=code&client_id=CxsSW4DDSjSDoCEsEA2oog&redirect_uri=https://app.budgetree.in/auth/zoom/callback&scope=meeting:read`;
+      const url = `https://zoom.us/oauth/authorize?response_type=code&client_id=YVJzzY96TyO9NkZPKehcew&redirect_uri=http://localhost:8080/auth/zoom/callback&scope=meeting:read`;
 
       // Send the redirect URL to the frontend
       return res.json({ redirectUrl: url });
@@ -18,3 +18,5 @@ export class ZoomService {
     }
   }
 }
+
+// iubp7yv1nghJAihhuBm7bCkyAhJtRTLG;

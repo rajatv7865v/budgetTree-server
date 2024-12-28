@@ -1,64 +1,67 @@
 import { HttpService } from '@nestjs/axios';
 import { Injectable, Res } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
+import axios from 'axios';
 import { firstValueFrom } from 'rxjs';
+import { CustomHttpException } from 'src/core/exceptions';
 
 @Injectable()
 export class TypeFormService {
-  constructor(private readonly httpService: HttpService) {}
+  private CLIENT_ID: string;
+  private REDIRECT_URI: string;
+  private CLIENT_SECRET: string;
+
+  constructor(
+    private readonly httpService: HttpService,
+    private readonly configService: ConfigService,
+  ) {
+    this.CLIENT_ID = this.configService.get<string>('TYPEFORM.ID');
+    this.REDIRECT_URI = this.configService.get<string>('TYPEFORM.URI');
+    this.CLIENT_SECRET = this.configService.get<string>('TYPEFORM.SECRET');
+  }
 
   async connect(res: any) {
     try {
-      const url =
-        'https://api.typeform.com/oauth/authorize?client_id=H3BwQYmeavoYtQ7z8XBzFne7guwKh1EhdJbqmzwVvqD6&redirect_uri=http://localhost:8080/api/v1/auth/typeform/callback&scope=forms:read+responses:read+webhooks:write';
-
-      // Send the redirect URL to the frontend
+      const url = `https://api.typeform.com/oauth/authorize?client_id=${this.CLIENT_ID}&redirect_uri=${this.REDIRECT_URI}&scope=forms:write+forms:read+responses:read+webhooks:write`;
       return res.json({ redirectUrl: url });
     } catch (error) {
-      console.error('Error sending HTTP request:', error);
-      throw error;
+      throw new CustomHttpException(error);
     }
   }
 
   async getAccessToken(code: string) {
-    console.log('code in access token', code);
-    const url = 'https://api.typeform.com/oauth/token';
+    const ACCESS_TOKEN_URL = 'https://api.typeform.com/oauth/token';
     const body = {
-      client_id: 'H3BwQYmeavoYtQ7z8XBzFne7guwKh1EhdJbqmzwVvqD6',
-      client_secret: 'Ei8KwfA6sqWcTc1otuw9P8BA3CRhRKGbHhC4sNDFnojN',
+      client_id: this.CLIENT_ID,
+      client_secret: this.CLIENT_SECRET,
       grant_type: 'authorization_code',
       code,
-      redirect_uri: 'http://localhost:8080/api/v1/auth/typeform/callback',
+      redirect_uri: this.REDIRECT_URI,
     };
 
     try {
       const response = await firstValueFrom(
-        this.httpService.post(url, body, {
+        this.httpService.post(ACCESS_TOKEN_URL, body, {
           headers: {
-            'Content-Type': 'application/x-www-form-urlencoded', // Set the content type
+            'Content-Type': 'application/x-www-form-urlencoded',
           },
         }),
       );
-      return response.data; // Includes access_token
+      return response.data;
     } catch (error) {
-      console.log(error);
-      console.error(
-        'Error fetching access token:',
-        error.response?.data || error.message,
-      );
-      throw error;
+      throw new CustomHttpException(error);
     }
   }
 
   async getAllForms(accessToken: string) {
-    console.log('acctoken in getAllforms', accessToken);
-    const url = 'https://api.typeform.com/forms';
+    const URL: string = 'https://api.typeform.com/forms';
     const headers = {
       Authorization: `Bearer ${accessToken}`,
     };
 
     try {
       const response = await firstValueFrom(
-        this.httpService.get(url, { headers }),
+        this.httpService.get(URL, { headers }),
       );
       return response.data; // Returns all forms
     } catch (error) {
@@ -67,6 +70,50 @@ export class TypeFormService {
         error.response?.data || error.message,
       );
       throw error;
+    }
+  }
+
+  async createQuestion(accessToken: string, formId: string, question: string) {
+    console.log('formId', formId);
+    try {
+      const url = `https://api.typeform.com/forms/${formId}`;
+
+      // Fetch the existing form
+      const form = await axios.get(url, {
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+        },
+      });
+
+      console.log('old form', form.data.fields);
+      // Add the new question to the existing fields
+      const updatedFields = [
+        ...form.data.fields,
+        {
+          title: question,
+          type: 'short_text',
+        },
+      ];
+
+      const response = await axios.put(
+        url,
+        {
+          title: form.data.title,
+          fields: updatedFields,
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+            'Content-Type': 'application/json',
+          },
+        },
+      );
+      console.log('response', response);
+      console.log('Form updated:', response.data);
+      return response.data;
+    } catch (error) {
+      console.log('error', error);
+      throw new CustomHttpException(error);
     }
   }
 }

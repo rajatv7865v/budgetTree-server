@@ -3,6 +3,8 @@ import { AppModule } from './app.module';
 import { ConfigService } from '@nestjs/config';
 import { Logger, ValidationPipe } from '@nestjs/common';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
+import { TransformResponseInterceptor } from './core/interceptors/response.interceptors';
+import mongoose from 'mongoose';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
@@ -12,11 +14,13 @@ async function bootstrap() {
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
     credentials: true,
   });
+
   const configService = await app.get(ConfigService);
-  console.log(configService.get('APP.APP_PORT'));
+  mongoose.set('debug', true);
 
   app.useGlobalPipes(new ValidationPipe());
   app.setGlobalPrefix('/api/v1');
+  app.useGlobalInterceptors(new TransformResponseInterceptor());
 
   //IMPLEMENT SWAGGER
   const config = new DocumentBuilder()

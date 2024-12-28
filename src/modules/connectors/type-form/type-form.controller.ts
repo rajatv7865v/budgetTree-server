@@ -1,8 +1,11 @@
 import {
+  Body,
   Controller,
   Get,
   HttpCode,
   HttpStatus,
+  Param,
+  Patch,
   Post,
   Query,
   Res,
@@ -14,14 +17,15 @@ import { CustomHttpException } from 'src/core/exceptions';
 @ApiBasicAuth()
 @Controller('auth/typeform')
 export class TypeFormController {
+  private tokenStore = new Map<string, string>();
   constructor(private readonly typeFormService: TypeFormService) {}
 
+  @HttpCode(HttpStatus.OK)
   @Get('connect')
-  // @HttpCode(HttpStatus.OK)
   connect(@Res() res: any) {
     try {
       const url = this.typeFormService.connect(res);
-      res.redirect(301, 'http://localhost:8080');
+      res.redirect(301, url);
     } catch (error) {
       throw new CustomHttpException(error);
     }
@@ -33,17 +37,12 @@ export class TypeFormController {
     try {
       const tokenResponse = await this.typeFormService.getAccessToken(code);
       const accessToken = tokenResponse.access_token;
-      console.log('accessToken', accessToken);
+      console.log(accessToken);
 
-      // // Fetch all forms
-      const forms = await this.typeFormService.getAllForms(accessToken);
-      console.log('forms', forms);
-
-      // Respond with the forms or redirect to a frontend page
-      // res.json(forms); // You could also render a view or redirect
-
-      // return forms;
-      res.redirect(301, 'http://localhost:3000/dashboard/type_form');
+      res.redirect(
+        301,
+        'http://localhost:3000/integrations/dashboard/type_form',
+      );
     } catch (error) {
       return;
       // res.status(500).json({ error: 'Failed to get access token or forms' });
@@ -53,11 +52,32 @@ export class TypeFormController {
   @HttpCode(HttpStatus.OK)
   @Get('/get-all-forms')
   async getAllForms() {
+    console.log(this.tokenStore.get('TYPEFORM'));
     const { items } = await this.typeFormService.getAllForms(
-      'E1bzNRuVzr8tKNPg3Ppf23CGZiECwy2zPQwrz1cFazmv',
+      '4kHsJhadCEgjv4jq6MMW3jasPu5U57iXWaR3Gow8LHT5',
     );
+    console.log(items);
     return {
       items,
     };
+  }
+
+  @HttpCode(HttpStatus.CREATED)
+  @Patch('/create-question/:formId')
+  async createQuestion(
+    @Param('formId') formId: string,
+    @Body('question') question: string,
+  ) {
+    try {
+      console.log(this.tokenStore.get('TYPEFORM'));
+      const response = await this.typeFormService.createQuestion(
+        '4kHsJhadCEgjv4jq6MMW3jasPu5U57iXWaR3Gow8LHT5',
+        formId,
+        question,
+      );
+      return response;
+    } catch (error) {
+      throw new CustomHttpException(error);
+    }
   }
 }

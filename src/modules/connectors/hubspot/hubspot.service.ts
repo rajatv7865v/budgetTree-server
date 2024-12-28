@@ -1,14 +1,26 @@
 import { HttpService } from '@nestjs/axios';
 import { Injectable, Res } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { firstValueFrom } from 'rxjs';
 
 @Injectable()
 export class HubSpotService {
-  constructor(private readonly httpService: HttpService) {}
+  private readonly CLIENT_ID: string;
+  private readonly CLIENT_SECRET: string;
+  private readonly REDIRECT_URI: string;
+
+  constructor(
+    private readonly httpService: HttpService,
+    private readonly configService: ConfigService,
+  ) {
+    this.CLIENT_ID = this.configService.get<string>('HUBSPOT.ID');
+    this.CLIENT_SECRET = this.configService.get<string>('HUBSPOT.SECRET');
+    this.REDIRECT_URI = this.configService.get<string>('HUBSPOT.URI');
+  }
 
   async connect(res: any) {
     try {
-      const url = `https://app.hubspot.com/oauth/authorize?client_id=6e27480e-9fa0-446a-a3cb-ea78208f5a24&scope=crm.objects.contacts.read&redirect_uri=https://app.budgetree.in/auth/hubspot/callback&response_type=code`;
+      const url = `https://app.hubspot.com/oauth/authorize?client_id=${this.CLIENT_ID}&scope=crm.objects.contacts.read&redirect_uri=${this.REDIRECT_URI}&response_type=code`;
 
       // Send the redirect URL to the frontend
       return res.json({ redirectUrl: url });
