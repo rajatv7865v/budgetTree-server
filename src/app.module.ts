@@ -5,7 +5,8 @@ import { ConfigModule } from '@nestjs/config';
 import { TypeFormModule } from './modules/connectors/type-form/type-form.module';
 import configuration from './config/configuration';
 import { ModulesModule } from './modules/modules.module';
-import { DatabaseModule } from './database/database.module';
+import { DatabaseModule } from './database/mongoose/database.module';
+import { MongooseModelsModule } from './database/schema/mongoose-models.module';
 
 @Module({
   imports: [
@@ -17,6 +18,7 @@ import { DatabaseModule } from './database/database.module';
       load: configuration,
     }),
     DatabaseModule,
+    MongooseModelsModule,
     ModulesModule,
   ],
   controllers: [AppController],

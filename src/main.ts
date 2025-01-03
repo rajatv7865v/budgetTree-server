@@ -10,7 +10,7 @@ async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
   app.enableCors({
-    origin: 'http://localhost:3000', // Your frontend origin (Change this to the correct origin if necessary)
+    origin: 'https://integrations.budgetree.in', // Your frontend origin (Change this to the correct origin if necessary)
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
     credentials: true,
   });

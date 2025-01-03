@@ -13,6 +13,7 @@ import {
 import { TypeFormService } from './type-form.service';
 import { ApiBasicAuth } from '@nestjs/swagger';
 import { CustomHttpException } from 'src/core/exceptions';
+import { SaveAutomationDto } from './dto/saveAutomation.dto';
 
 @ApiBasicAuth()
 @Controller('auth/typeform')
@@ -52,14 +53,18 @@ export class TypeFormController {
   @HttpCode(HttpStatus.OK)
   @Get('/get-all-forms')
   async getAllForms() {
-    console.log(this.tokenStore.get('TYPEFORM'));
-    const { items } = await this.typeFormService.getAllForms(
-      '4kHsJhadCEgjv4jq6MMW3jasPu5U57iXWaR3Gow8LHT5',
-    );
-    console.log(items);
-    return {
-      items,
-    };
+    try {
+      const { items } = await this.typeFormService.getAllForms(
+        'Ep9YyfxMYzgQS9EyDJ48PQezQLJKUgN9KBJYKyYomuwX',
+      );
+      console.log(items);
+      return {
+        items,
+      };
+    } catch (error) {
+      console.log(error);
+      throw new CustomHttpException(error);
+    }
   }
 
   @HttpCode(HttpStatus.CREATED)
@@ -76,6 +81,26 @@ export class TypeFormController {
         question,
       );
       return response;
+    } catch (error) {
+      throw new CustomHttpException(error);
+    }
+  }
+
+  @HttpCode(HttpStatus.CREATED)
+  @Post('/create-automation')
+  async saveAutomation(@Body() saveAutomationDto: SaveAutomationDto) {
+    try {
+      return await this.typeFormService.saveAutomation(saveAutomationDto);
+    } catch (error) {
+      throw new CustomHttpException(error);
+    }
+  }
+
+  @HttpCode(HttpStatus.OK)
+  @Get('/getAll-automation')
+  async getAllAutomation() {
+    try {
+      return await this.typeFormService.getAllAutomation();
     } catch (error) {
       throw new CustomHttpException(error);
     }

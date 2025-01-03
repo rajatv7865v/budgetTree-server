@@ -4,6 +4,13 @@ import { ConfigService } from '@nestjs/config';
 import axios from 'axios';
 import { firstValueFrom } from 'rxjs';
 import { CustomHttpException } from 'src/core/exceptions';
+import { SaveAutomationDto } from './dto/saveAutomation.dto';
+import { InjectModel } from '@nestjs/mongoose';
+import {
+  AUTOMATION_MODEL,
+  AutomationDocument,
+} from 'src/database/schema/automation';
+import { Model } from 'mongoose';
 
 @Injectable()
 export class TypeFormService {
@@ -12,6 +19,8 @@ export class TypeFormService {
   private CLIENT_SECRET: string;
 
   constructor(
+    @InjectModel(AUTOMATION_MODEL)
+    private readonly automationModel: Model<AutomationDocument>,
     private readonly httpService: HttpService,
     private readonly configService: ConfigService,
   ) {
@@ -113,6 +122,34 @@ export class TypeFormService {
       return response.data;
     } catch (error) {
       console.log('error', error);
+      throw new CustomHttpException(error);
+    }
+  }
+  async saveAutomation(saveAutomationDto: SaveAutomationDto) {
+    try {
+      const dosumentResponse = await this.automationModel.create({
+        formId: saveAutomationDto?.formId,
+        question: saveAutomationDto?.question,
+        campaignId: saveAutomationDto?.campaignId,
+        expiry: new Date(
+          new Date().setMonth(
+            new Date().getMonth() + Number(saveAutomationDto?.expiry || 1),
+          ),
+        ),
+        approvalType: saveAutomationDto?.approvalType,
+      });
+      await dosumentResponse.save();
+    } catch (error) {
+      console.log(error);
+      throw new CustomHttpException(error);
+    }
+  }
+
+  async getAllAutomation() {
+    try {
+      return await this.automationModel.find();
+    } catch (error) {
+      console.log(error);
       throw new CustomHttpException(error);
     }
   }
